@@ -1,0 +1,78 @@
+syntax = "proto3";
+package sensor.v1;
+import "google/api/annotations.proto";
+// We can tell the generator the field behaviors so that some fields would not appear
+// when regarded as input / output only fields
+import "google/api/field_behavior.proto";
+// Customize the method signature by importing the proto file
+import "google/api/client.proto";
+// We can import this protobuf file to use the timestamp data type in our code
+import "google/protobuf/timestamp.proto";
+// Import the file to return an empty message
+import "google/protobuf/empty.proto";
+// To generate the final product OpenAPI specification file, we shall import the annotations to tell the generator
+// to fill the corresponding fields so as to tell the developer how to use the APIs in a proper way.
+import "openapi/v3/annotations.proto";
+// To employ the validator like what the Spring framework does, we shall import the validate file provided by Envoy
+import "validate/validate.proto";
+// Any other protocol buffers definition files should also be imported explicitly
+import "sensordata-processing-microservice/api/sensor/v1/error_reason.proto";
+option go_package = "sensordata-processing-microservice/api/sensordata/v1;v1";
+option java_multiple_files = true; // Separate .java files will be generated for each of the Java classes/enums/etc.
+option java_package = "sensordata_processing.v1"; // The package which the generated code will be placed in
+option objc_class_prefix = "APISensordata_processingV1"; // Objective-C class prefix
+
+option (openapi.v3.document) = {
+  info: {
+    title: "Sensor data Processing Service"
+    description: "A basic  service process on the sensor data"
+    version: "1.0.0"
+  }
+};
+service SensorService {
+  rpc TriggerAlarm (AlarmRequest) returns (AlarmResponse);
+  rpc InterpolateData (InterpolationRequest) returns (InterpolationResponse);
+  // Set threshold for triggering alarm
+  rpc SetThreshold(SetThresholdRequest) returns (SetThresholdResponse) {}
+
+  // Check if alarm is triggered
+  rpc CheckAlarm(AlarmRequest) returns (AlarmResponse) {}
+}
+message SetThresholdRequest {
+  string sensor_id = 1;
+  double threshold = 2;
+}
+
+message SetThresholdResponse {
+  bool success = 1;
+}
+message Sensor {
+  string id = 1;              // 传感器编号
+  int64 type_id = 2;          // 传感器类型
+  string desc = 3;            // 传感器描述
+  int64 rule_id = 4;          // 传感器应用的规则编号
+  string status = 5;          // 传感器状态
+  string last_update = 6;     // 最后更新时间
+}
+
+// 请求：检查传感器是否触发报警
+message AlarmRequest {
+  string sensor_id = 1;       // 请求报警检查的传感器 ID
+}
+
+// 响应：报警检查结果
+message AlarmResponse {
+  bool alarm_triggered = 1;   // 是否触发报警
+  string message = 2;         // 报警消息内容
+}
+
+// 请求：执行数据插值
+message InterpolationRequest {
+  string terminal_id = 1;     // 请求插值的终端 ID
+}
+
+// 响应：插值执行结果
+message InterpolationResponse {
+  bool interpolated = 1;      // 是否成功执行插值
+  string message = 2;         // 插值消息内容
+}
